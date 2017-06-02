@@ -9,7 +9,7 @@ using ErFunc;
 
 namespace Server
 {
-    public class FuncsVController
+    public static class FuncsVController
     {
         public static DBDingus _DBDingus = new DBDingus();
 
@@ -46,7 +46,14 @@ namespace Server
             //inteken/uiteken
             command = new SqlCommand();
             command.Parameters.AddWithValue("@userid", toReturn.TheUserWithEntryInfo.UsE.ID);
-            command.CommandText = $"select * from {DBDingus.RegistratieTableNames.RegistratieTableName} where {DBDingus.RegistratieTableNames.IDOfUserRelated} = @userid and {DBDingus.RegistratieTableNames.Date} = cast(getdate() as date)";
+            if (_request.DateIsToday)
+            {
+                command.CommandText = $"select * from {DBDingus.RegistratieTableNames.RegistratieTableName} where {DBDingus.RegistratieTableNames.IDOfUserRelated} = @userid and {DBDingus.RegistratieTableNames.Date} = cast(getdate() as date)";
+            }
+            else
+            {
+                command.CommandText = $"select * from {DBDingus.RegistratieTableNames.RegistratieTableName} where {DBDingus.RegistratieTableNames.IDOfUserRelated} = @userid and {DBDingus.RegistratieTableNames.Date} = cast('{_request.Date.ToString("yyyy\\/MM\\/dd")}' as date)";
+            }
             List<DBDingus.RegistratieTableTableEntry> _existingRegEntry = FuncsVSQL.GetListRTFromReader(command); //_DBDingus.GetListRTFromReader(FuncsVSQL.SQLQuery(command));
             DBDingus.RegistratieTableTableEntry existingRegEntry;
             command = new SqlCommand();
@@ -62,22 +69,43 @@ namespace Server
                 {
                     if (existingRegEntry.IsAanwezig)
                     {
-                        //update teken uit
+                        //update teken uit cast('{_Request.deEntry.Date.ToString("yyyy\\/MM\\/dd")}
                         toReturn.uitgetekened = true;
-                        command.CommandText = $"update {DBDingus.RegistratieTableNames.RegistratieTableName} set {DBDingus.RegistratieTableNames.TimeUitteken} = cast(getdate() as time), {DBDingus.RegistratieTableNames.IsAanwezig} = 0 ,{DBDingus.RegistratieTableNames.IsLaat} = 0 where {DBDingus.RegistratieTableNames.Date} = cast(getdate() as date) and {DBDingus.RegistratieTableNames.IDOfUserRelated} = {toReturn.TheUserWithEntryInfo.UsE.ID}";
+                        if (_request.DateIsToday)
+                        {
+                            command.CommandText = $"update {DBDingus.RegistratieTableNames.RegistratieTableName} set {DBDingus.RegistratieTableNames.TimeUitteken} = cast(getdate() as time), {DBDingus.RegistratieTableNames.IsAanwezig} = 0 ,{DBDingus.RegistratieTableNames.IsLaat} = 0 where {DBDingus.RegistratieTableNames.Date} = cast(getdate() as date) and {DBDingus.RegistratieTableNames.IDOfUserRelated} = {toReturn.TheUserWithEntryInfo.UsE.ID}";
+                        }
+                        else
+                        {
+                            command.CommandText = $"update {DBDingus.RegistratieTableNames.RegistratieTableName} set {DBDingus.RegistratieTableNames.TimeUitteken} = cast(getdate() as time), {DBDingus.RegistratieTableNames.IsAanwezig} = 0 ,{DBDingus.RegistratieTableNames.IsLaat} = 0 where {DBDingus.RegistratieTableNames.Date} = cast('{_request.Date.ToString("yyyy\\/MM\\/dd")}' as date) and {DBDingus.RegistratieTableNames.IDOfUserRelated} = {toReturn.TheUserWithEntryInfo.UsE.ID}";
+                        }
                     }
                     else
                     {
                         //update anuleer uitteken
                         toReturn.uitekenengeanuleerd = true;
-                        command.CommandText = $"update {DBDingus.RegistratieTableNames.RegistratieTableName} set {DBDingus.RegistratieTableNames.IsAanwezig} = 1, {DBDingus.RegistratieTableNames.IsLaat} = 0  where {DBDingus.RegistratieTableNames.Date} = cast(getdate() as date) and {DBDingus.RegistratieTableNames.IDOfUserRelated} = {toReturn.TheUserWithEntryInfo.UsE.ID}";
+                        if (_request.DateIsToday)
+                        {
+                            command.CommandText = $"update {DBDingus.RegistratieTableNames.RegistratieTableName} set {DBDingus.RegistratieTableNames.IsAanwezig} = 1, {DBDingus.RegistratieTableNames.IsLaat} = 0  where {DBDingus.RegistratieTableNames.Date} = cast(getdate() as date) and {DBDingus.RegistratieTableNames.IDOfUserRelated} = {toReturn.TheUserWithEntryInfo.UsE.ID}";
+                        }
+                        else
+                        {
+                            command.CommandText = $"update {DBDingus.RegistratieTableNames.RegistratieTableName} set {DBDingus.RegistratieTableNames.IsAanwezig} = 1, {DBDingus.RegistratieTableNames.IsLaat} = 0  where {DBDingus.RegistratieTableNames.Date} = cast('{_request.Date.ToString("yyyy\\/MM\\/dd")}' as date) and {DBDingus.RegistratieTableNames.IDOfUserRelated} = {toReturn.TheUserWithEntryInfo.UsE.ID}";
+                        }
                     }
                 }
                 else
                 {
                     //update inteken
                     toReturn.ingetekened = true;
-                    command.CommandText = $"update {DBDingus.RegistratieTableNames.RegistratieTableName} set {DBDingus.RegistratieTableNames.HeeftIngetekend} = 1, {DBDingus.RegistratieTableNames.TimeInteken} = cast(getdate() as time), {DBDingus.RegistratieTableNames.IsAanwezig} = 1, {DBDingus.RegistratieTableNames.IsLaat} = 0  where {DBDingus.RegistratieTableNames.Date} = cast(getdate() as date) and {DBDingus.RegistratieTableNames.IDOfUserRelated} = {toReturn.TheUserWithEntryInfo.UsE.ID}";
+                    if (_request.DateIsToday)
+                    {
+                        command.CommandText = $"update {DBDingus.RegistratieTableNames.RegistratieTableName} set {DBDingus.RegistratieTableNames.HeeftIngetekend} = 1, {DBDingus.RegistratieTableNames.TimeInteken} = cast(getdate() as time), {DBDingus.RegistratieTableNames.IsAanwezig} = 1, {DBDingus.RegistratieTableNames.IsLaat} = 0  where {DBDingus.RegistratieTableNames.Date} = cast(getdate() as date) and {DBDingus.RegistratieTableNames.IDOfUserRelated} = {toReturn.TheUserWithEntryInfo.UsE.ID}";
+                    }
+                    else
+                    {
+                        command.CommandText = $"update {DBDingus.RegistratieTableNames.RegistratieTableName} set {DBDingus.RegistratieTableNames.HeeftIngetekend} = 1, {DBDingus.RegistratieTableNames.TimeInteken} = cast(getdate() as time), {DBDingus.RegistratieTableNames.IsAanwezig} = 1, {DBDingus.RegistratieTableNames.IsLaat} = 0  where {DBDingus.RegistratieTableNames.Date} = cast('{_request.Date.ToString("yyyy\\/MM\\/dd")}' as date) and {DBDingus.RegistratieTableNames.IDOfUserRelated} = {toReturn.TheUserWithEntryInfo.UsE.ID}";
+                    }
                 }
             }
             else
@@ -86,12 +114,26 @@ namespace Server
                 //inteken
                 command.Parameters.AddWithValue("@relatedUserId", foundUsers[0].ID);
                 toReturn.ingetekened = true;
-                command.CommandText = $"insert into {DBDingus.RegistratieTableNames.RegistratieTableName} ({DBDingus.RegistratieTableNames.IDOfUserRelated},{DBDingus.RegistratieTableNames.Date},{DBDingus.RegistratieTableNames.TimeInteken},{DBDingus.RegistratieTableNames.HeeftIngetekend},{DBDingus.RegistratieTableNames.IsAanwezig},{DBDingus.RegistratieTableNames.IsZiek},{DBDingus.RegistratieTableNames.IsFlexibelverlof},{DBDingus.RegistratieTableNames.IsStudieverlof},{DBDingus.RegistratieTableNames.IsExcursie},{DBDingus.RegistratieTableNames.IsLaat},{DBDingus.RegistratieTableNames.IsToegestaanAfwezig},{DBDingus.RegistratieTableNames.Opmerking},{DBDingus.RegistratieTableNames.Verwachtetijdvanaanwezighijd}) values (@relatedUserId, cast(getdate() as date), cast(getdate() as time), 1,1,0,0,0,0,0,0,'','')";
+                if (_request.DateIsToday)
+                {
+                    command.CommandText = $"insert into {DBDingus.RegistratieTableNames.RegistratieTableName} ({DBDingus.RegistratieTableNames.IDOfUserRelated},{DBDingus.RegistratieTableNames.Date},{DBDingus.RegistratieTableNames.TimeInteken},{DBDingus.RegistratieTableNames.HeeftIngetekend},{DBDingus.RegistratieTableNames.IsAanwezig},{DBDingus.RegistratieTableNames.IsZiek},{DBDingus.RegistratieTableNames.IsFlexibelverlof},{DBDingus.RegistratieTableNames.IsStudieverlof},{DBDingus.RegistratieTableNames.IsExcursie},{DBDingus.RegistratieTableNames.IsLaat},{DBDingus.RegistratieTableNames.IsToegestaanAfwezig},{DBDingus.RegistratieTableNames.Opmerking},{DBDingus.RegistratieTableNames.Verwachtetijdvanaanwezighijd}) values (@relatedUserId, cast(getdate() as date), cast(getdate() as time), 1,1,0,0,0,0,0,0,'','')";
+                }
+                else
+                {
+                    command.CommandText = $"insert into {DBDingus.RegistratieTableNames.RegistratieTableName} ({DBDingus.RegistratieTableNames.IDOfUserRelated},{DBDingus.RegistratieTableNames.Date},{DBDingus.RegistratieTableNames.TimeInteken},{DBDingus.RegistratieTableNames.HeeftIngetekend},{DBDingus.RegistratieTableNames.IsAanwezig},{DBDingus.RegistratieTableNames.IsZiek},{DBDingus.RegistratieTableNames.IsFlexibelverlof},{DBDingus.RegistratieTableNames.IsStudieverlof},{DBDingus.RegistratieTableNames.IsExcursie},{DBDingus.RegistratieTableNames.IsLaat},{DBDingus.RegistratieTableNames.IsToegestaanAfwezig},{DBDingus.RegistratieTableNames.Opmerking},{DBDingus.RegistratieTableNames.Verwachtetijdvanaanwezighijd}) values (@relatedUserId, cast('{_request.Date.ToString("yyyy\\/MM\\/dd")}' as date), cast(getdate() as time), 1,1,0,0,0,0,0,0,'','')";
+                }
             }
             FuncsVSQL.SQLNonQuery(command);
             command = new SqlCommand();
             command.Parameters.AddWithValue("@userid", toReturn.TheUserWithEntryInfo.UsE.ID);
-            command.CommandText = $"select * from {DBDingus.RegistratieTableNames.RegistratieTableName} where {DBDingus.RegistratieTableNames.IDOfUserRelated} = @userid and {DBDingus.RegistratieTableNames.Date} = cast(getdate() as date)";
+            if (_request.DateIsToday)
+            {
+                command.CommandText = $"select * from {DBDingus.RegistratieTableNames.RegistratieTableName} where {DBDingus.RegistratieTableNames.IDOfUserRelated} = @userid and {DBDingus.RegistratieTableNames.Date} = cast(getdate() as date)";
+            }
+            else
+            {
+                command.CommandText = $"select * from {DBDingus.RegistratieTableNames.RegistratieTableName} where {DBDingus.RegistratieTableNames.IDOfUserRelated} = @userid and {DBDingus.RegistratieTableNames.Date} = cast('{_request.Date.ToString("yyyy\\/MM\\/dd")}' as date)";
+            }
             List<DBDingus.RegistratieTableTableEntry> endResult = FuncsVSQL.GetListRTFromReader(command); //_DBDingus.GetListRTFromReader(FuncsVSQL.SQLQuery(command));
             toReturn.TheUserWithEntryInfo.hasTodayRegEntry = true;
             toReturn.TheUserWithEntryInfo.RegE = endResult[0];
@@ -124,7 +166,7 @@ namespace Server
             regEntrys = FuncsVSQL.GetListRTFromReader(command); //_DBDingus.GetListRTFromReader(FuncsVSQL.SQLQuery(command));
             foreach (var User in userEntrys)
             {
-                if (User.IsActiveUser)
+                if (_request.alsoReturnExUsers || User.IsActiveUser)
                 {
                     DBDingus.CombUserAfwEntry toPutInList = new DBDingus.CombUserAfwEntry();
                     toPutInList.UsE = User;
@@ -177,15 +219,12 @@ namespace Server
             {
                 if (_Request.newEntryDateIsToday)
                 {
-                    _commamd.CommandText = $"insert into {DBDingus.RegistratieTableNames.RegistratieTableName}( {DBDingus.RegistratieTableNames.IDOfUserRelated}, {DBDingus.RegistratieTableNames.Date}, {DBDingus.RegistratieTableNames.TimeInteken}, {DBDingus.RegistratieTableNames.TimeUitteken}, {DBDingus.RegistratieTableNames.HeeftIngetekend}, {DBDingus.RegistratieTableNames.IsAanwezig}, {DBDingus.RegistratieTableNames.IsZiek}, {DBDingus.RegistratieTableNames.IsFlexibelverlof}, {DBDingus.RegistratieTableNames.IsStudieverlof}, {DBDingus.RegistratieTableNames.IsExcursie}, {DBDingus.RegistratieTableNames.IsLaat}, {DBDingus.RegistratieTableNames.IsToegestaanAfwezig}, {DBDingus.RegistratieTableNames.Opmerking}, {DBDingus.RegistratieTableNames.Verwachtetijdvanaanwezighijd}) values ( {_Request.deEntry.IDOfUserRelated}, cast('{_Request.deEntry.Date.ToString("yyyy\\/MM\\/dd")}' as date), cast('{_Request.deEntry.TimeInteken}' as time), cast('{_Request.deEntry.TimeUitteken}' as time), cast('{_Request.deEntry.HeeftIngetekend}' as bit), cast('{_Request.deEntry.IsAanwezig}' as bit),  cast('{_Request.deEntry.IsZiek}' as bit), cast('{_Request.deEntry.IsFlexiebelverlof}' as bit), cast('{_Request.deEntry.IsStudieverlof}' as bit),  cast('{_Request.deEntry.IsExcurtie}' as bit),  cast('{_Request.deEntry.IsLaat}' as bit), cast('{_Request.deEntry.IsToegestaalAfwezig}' as bit, @andered, {_Request.deEntry.Verwachtetijdvanaanwezighijd})";
+                    _commamd.CommandText = $"insert into {DBDingus.RegistratieTableNames.RegistratieTableName}( {DBDingus.RegistratieTableNames.IDOfUserRelated}, {DBDingus.RegistratieTableNames.Date}, {DBDingus.RegistratieTableNames.TimeInteken}, {DBDingus.RegistratieTableNames.TimeUitteken}, {DBDingus.RegistratieTableNames.HeeftIngetekend}, {DBDingus.RegistratieTableNames.IsAanwezig}, {DBDingus.RegistratieTableNames.IsZiek}, {DBDingus.RegistratieTableNames.IsFlexibelverlof}, {DBDingus.RegistratieTableNames.IsStudieverlof}, {DBDingus.RegistratieTableNames.IsExcursie}, {DBDingus.RegistratieTableNames.IsLaat}, {DBDingus.RegistratieTableNames.IsToegestaanAfwezig}, {DBDingus.RegistratieTableNames.Opmerking}, {DBDingus.RegistratieTableNames.Verwachtetijdvanaanwezighijd}) values ( {_Request.deEntry.IDOfUserRelated}, cast(getdate() as date), cast('{_Request.deEntry.TimeInteken}' as time), cast('{_Request.deEntry.TimeUitteken}' as time), cast('{_Request.deEntry.HeeftIngetekend}' as bit), cast('{_Request.deEntry.IsAanwezig}' as bit),  cast('{_Request.deEntry.IsZiek}' as bit), cast('{_Request.deEntry.IsFlexiebelverlof}' as bit), cast('{_Request.deEntry.IsStudieverlof}' as bit),  cast('{_Request.deEntry.IsExcurtie}' as bit),  cast('{_Request.deEntry.IsLaat}' as bit), cast('{_Request.deEntry.IsToegestaalAfwezig}' as bit), @andered,cast(@verwachtetijdvana as time) )";
 
-                    //_commamd.CommandText = $"insert into {DBDingus.RegistratieTableNames.RegistratieTableName} ({DBDingus.RegistratieTableNames.IDOfUserRelated}, {DBDingus.RegistratieTableNames.Date}, {DBDingus.RegistratieTableNames.TimeInteken}, {DBDingus.RegistratieTableNames.TimeUitteken}, {DBDingus.RegistratieTableNames.HeeftIngetekend}, {DBDingus.RegistratieTableNames.IsAanwezig}, {DBDingus.RegistratieTableNames.IsZiek}, {DBDingus.RegistratieTableNames.IsFlexibelverlof}, {DBDingus.RegistratieTableNames.IsStudieverlof}, {DBDingus.RegistratieTableNames.IsExcursie},{DBDingus.RegistratieTableNames.IsLaat}, {DBDingus.RegistratieTableNames.IsToegestaanAfwezig}, {DBDingus.RegistratieTableNames.Opmerking}, {DBDingus.RegistratieTableNames.Verwachtetijdvanaanwezighijd}) values ({_Request.deEntry.IDOfUserRelated}, cast(getdate() as date), cast('{_Request.deEntry.TimeInteken}' as time), cast('{_Request.deEntry.TimeUitteken}' as time), cast('{_Request.deEntry.HeeftIngetekend}' as bit), cast('{_Request.deEntry.IsAanwezig}' as bit), cast('{_Request.deEntry.IsZiek}' as bit),cast('{_Request.deEntry.IsFlexiebelverlof}' as bit), cast('{_Request.deEntry.IsStudieverlof}' as bit), cast('{_Request.deEntry.IsExcurtie}' as bit), cast('{_Request.deEntry.IsLaat}' as bit), cast('{_Request.deEntry.IsToegestaalAfwezig}' as bit), @andered, cast(@verwachtetijdvana as time))";
                 }
                 else
                 {
-                    //_commamd.CommandText = $"insert into {DBDingus.RegistratieTableNames.RegistratieTableName} ({DBDingus.RegistratieTableNames.IDOfUserRelated}, {DBDingus.RegistratieTableNames.Date}, {DBDingus.RegistratieTableNames.TimeInteken}, {DBDingus.RegistratieTableNames.TimeUitteken}, {DBDingus.RegistratieTableNames.HeeftIngetekend}, {DBDingus.RegistratieTableNames.IsAanwezig}, {DBDingus.RegistratieTableNames.IsZiek}, {DBDingus.RegistratieTableNames.IsFlexibelverlof}, {DBDingus.RegistratieTableNames.IsStudieverlof}, {DBDingus.RegistratieTableNames.IsExcursie},{DBDingus.RegistratieTableNames.IsLaat},{DBDingus.RegistratieTableNames.IsToegestaanAfwezig}, {DBDingus.RegistratieTableNames.Opmerking}, {DBDingus.RegistratieTableNames.Verwachtetijdvanaanwezighijd}) values ({_Request.deEntry.IDOfUserRelated}, cast('{_Request.deEntry.Date.ToString("yyyy\\/MM\\/dd")}' as date), cast('{_Request.deEntry.TimeInteken}' as time), cast('{_Request.deEntry.TimeUitteken}' as time), cast('{_Request.deEntry.HeeftIngetekend}' as bit), cast('{_Request.deEntry.IsAanwezig}' as bit), cast('{_Request.deEntry.IsZiek}' as bit),cast('{_Request.deEntry.IsFlexiebelverlof}' as bit), cast('{_Request.deEntry.IsStudieverlof}' as bit), cast('{_Request.deEntry.IsExcurtie}' as bit), cast('{_Request.deEntry.IsLaat}' as bit),cast('{_Request.deEntry.IsToegestaalAfwezig}' as bit), @andered, cast(@verwachtetijdvana as time))";
-
-                    _commamd.CommandText = $"insert into {DBDingus.RegistratieTableNames.RegistratieTableName}( {DBDingus.RegistratieTableNames.IDOfUserRelated}, {DBDingus.RegistratieTableNames.Date}, {DBDingus.RegistratieTableNames.TimeInteken}, {DBDingus.RegistratieTableNames.TimeUitteken}, {DBDingus.RegistratieTableNames.HeeftIngetekend}, {DBDingus.RegistratieTableNames.IsAanwezig}, {DBDingus.RegistratieTableNames.IsZiek}, {DBDingus.RegistratieTableNames.IsFlexibelverlof}, {DBDingus.RegistratieTableNames.IsStudieverlof}, {DBDingus.RegistratieTableNames.IsExcursie}, {DBDingus.RegistratieTableNames.IsLaat}, {DBDingus.RegistratieTableNames.IsToegestaanAfwezig}, {DBDingus.RegistratieTableNames.Opmerking}, {DBDingus.RegistratieTableNames.Verwachtetijdvanaanwezighijd}) values ( {_Request.deEntry.IDOfUserRelated}, cast(getdate() as date), cast('{_Request.deEntry.TimeInteken}' as time), cast('{_Request.deEntry.TimeUitteken}' as time), cast('{_Request.deEntry.HeeftIngetekend}' as bit), cast('{_Request.deEntry.IsAanwezig}' as bit),  cast('{_Request.deEntry.IsZiek}' as bit), cast('{_Request.deEntry.IsFlexiebelverlof}' as bit), cast('{_Request.deEntry.IsStudieverlof}' as bit),  cast('{_Request.deEntry.IsExcurtie}' as bit),  cast('{_Request.deEntry.IsLaat}' as bit), cast('{_Request.deEntry.IsToegestaalAfwezig}' as bit), @andered,cast(@verwachtetijdvana as time) )";
+                    _commamd.CommandText = $"insert into {DBDingus.RegistratieTableNames.RegistratieTableName}( {DBDingus.RegistratieTableNames.IDOfUserRelated}, {DBDingus.RegistratieTableNames.Date}, {DBDingus.RegistratieTableNames.TimeInteken}, {DBDingus.RegistratieTableNames.TimeUitteken}, {DBDingus.RegistratieTableNames.HeeftIngetekend}, {DBDingus.RegistratieTableNames.IsAanwezig}, {DBDingus.RegistratieTableNames.IsZiek}, {DBDingus.RegistratieTableNames.IsFlexibelverlof}, {DBDingus.RegistratieTableNames.IsStudieverlof}, {DBDingus.RegistratieTableNames.IsExcursie}, {DBDingus.RegistratieTableNames.IsLaat}, {DBDingus.RegistratieTableNames.IsToegestaanAfwezig}, {DBDingus.RegistratieTableNames.Opmerking}, {DBDingus.RegistratieTableNames.Verwachtetijdvanaanwezighijd}) values ( {_Request.deEntry.IDOfUserRelated}, cast('{_Request.deEntry.Date.ToString("yyyy\\/MM\\/dd")}' as date), cast('{_Request.deEntry.TimeInteken}' as time), cast('{_Request.deEntry.TimeUitteken}' as time), cast('{_Request.deEntry.HeeftIngetekend}' as bit), cast('{_Request.deEntry.IsAanwezig}' as bit),  cast('{_Request.deEntry.IsZiek}' as bit), cast('{_Request.deEntry.IsFlexiebelverlof}' as bit), cast('{_Request.deEntry.IsStudieverlof}' as bit),  cast('{_Request.deEntry.IsExcurtie}' as bit),  cast('{_Request.deEntry.IsLaat}' as bit), cast('{_Request.deEntry.IsToegestaalAfwezig}' as bit), @andered, cast(@verwachtetijdvana as time) )";
 
                 }
 
@@ -201,8 +240,14 @@ namespace Server
             }
             else
             {
-
-                _commamd.CommandText = $@"update {DBDingus.RegistratieTableNames.RegistratieTableName} set {DBDingus.RegistratieTableNames.IDOfUserRelated} = {_Request.deEntry.IDOfUserRelated}, {DBDingus.RegistratieTableNames.Date} = cast('{_Request.deEntry.Date.ToString("yyyy\\/MM\\/dd")}' as date), {DBDingus.RegistratieTableNames.TimeInteken} = cast('{_Request.deEntry.TimeInteken}' as time), {DBDingus.RegistratieTableNames.TimeUitteken} = cast('{_Request.deEntry.TimeUitteken}' as time), {DBDingus.RegistratieTableNames.IsAanwezig} = cast('{_Request.deEntry.IsAanwezig}' as bit), {DBDingus.RegistratieTableNames.HeeftIngetekend} = cast('{_Request.deEntry.HeeftIngetekend}' as bit), {DBDingus.RegistratieTableNames.IsZiek} = cast('{_Request.deEntry.IsZiek}' as bit), {DBDingus.RegistratieTableNames.IsFlexibelverlof} = cast('{_Request.deEntry.IsFlexiebelverlof}' as bit), {DBDingus.RegistratieTableNames.IsStudieverlof} = cast('{_Request.deEntry.IsStudieverlof}' as bit), {DBDingus.RegistratieTableNames.IsExcursie} = cast('{_Request.deEntry.IsExcurtie}' as bit), {DBDingus.RegistratieTableNames.IsLaat} = cast('{_Request.deEntry.IsLaat}' as bit), {DBDingus.RegistratieTableNames.IsToegestaanAfwezig} = cast('{_Request.deEntry.IsToegestaalAfwezig}' as bit), {DBDingus.RegistratieTableNames.Opmerking} = @andered, {DBDingus.RegistratieTableNames.Verwachtetijdvanaanwezighijd} = cast(@verwachtetijdvana as time) where {DBDingus.RegistratieTableNames.ID} = {_Request.deEntry.ID}";
+                if (_Request.newEntryDateIsToday)
+                {
+                    _commamd.CommandText = $@"update {DBDingus.RegistratieTableNames.RegistratieTableName} set {DBDingus.RegistratieTableNames.IDOfUserRelated} = {_Request.deEntry.IDOfUserRelated}, {DBDingus.RegistratieTableNames.Date} = cast(getdate() as date), {DBDingus.RegistratieTableNames.TimeInteken} = cast('{_Request.deEntry.TimeInteken}' as time), {DBDingus.RegistratieTableNames.TimeUitteken} = cast('{_Request.deEntry.TimeUitteken}' as time), {DBDingus.RegistratieTableNames.IsAanwezig} = cast('{_Request.deEntry.IsAanwezig}' as bit), {DBDingus.RegistratieTableNames.HeeftIngetekend} = cast('{_Request.deEntry.HeeftIngetekend}' as bit), {DBDingus.RegistratieTableNames.IsZiek} = cast('{_Request.deEntry.IsZiek}' as bit), {DBDingus.RegistratieTableNames.IsFlexibelverlof} = cast('{_Request.deEntry.IsFlexiebelverlof}' as bit), {DBDingus.RegistratieTableNames.IsStudieverlof} = cast('{_Request.deEntry.IsStudieverlof}' as bit), {DBDingus.RegistratieTableNames.IsExcursie} = cast('{_Request.deEntry.IsExcurtie}' as bit), {DBDingus.RegistratieTableNames.IsLaat} = cast('{_Request.deEntry.IsLaat}' as bit), {DBDingus.RegistratieTableNames.IsToegestaanAfwezig} = cast('{_Request.deEntry.IsToegestaalAfwezig}' as bit), {DBDingus.RegistratieTableNames.Opmerking} = @andered, {DBDingus.RegistratieTableNames.Verwachtetijdvanaanwezighijd} = cast(@verwachtetijdvana as time) where {DBDingus.RegistratieTableNames.ID} = {_Request.deEntry.ID}";
+                }
+                else
+                {
+                    _commamd.CommandText = $@"update {DBDingus.RegistratieTableNames.RegistratieTableName} set {DBDingus.RegistratieTableNames.IDOfUserRelated} = {_Request.deEntry.IDOfUserRelated}, {DBDingus.RegistratieTableNames.Date} = cast('{_Request.deEntry.Date.ToString("yyyy\\/MM\\/dd")}' as date), {DBDingus.RegistratieTableNames.TimeInteken} = cast('{_Request.deEntry.TimeInteken}' as time), {DBDingus.RegistratieTableNames.TimeUitteken} = cast('{_Request.deEntry.TimeUitteken}' as time), {DBDingus.RegistratieTableNames.IsAanwezig} = cast('{_Request.deEntry.IsAanwezig}' as bit), {DBDingus.RegistratieTableNames.HeeftIngetekend} = cast('{_Request.deEntry.HeeftIngetekend}' as bit), {DBDingus.RegistratieTableNames.IsZiek} = cast('{_Request.deEntry.IsZiek}' as bit), {DBDingus.RegistratieTableNames.IsFlexibelverlof} = cast('{_Request.deEntry.IsFlexiebelverlof}' as bit), {DBDingus.RegistratieTableNames.IsStudieverlof} = cast('{_Request.deEntry.IsStudieverlof}' as bit), {DBDingus.RegistratieTableNames.IsExcursie} = cast('{_Request.deEntry.IsExcurtie}' as bit), {DBDingus.RegistratieTableNames.IsLaat} = cast('{_Request.deEntry.IsLaat}' as bit), {DBDingus.RegistratieTableNames.IsToegestaanAfwezig} = cast('{_Request.deEntry.IsToegestaalAfwezig}' as bit), {DBDingus.RegistratieTableNames.Opmerking} = @andered, {DBDingus.RegistratieTableNames.Verwachtetijdvanaanwezighijd} = cast(@verwachtetijdvana as time) where {DBDingus.RegistratieTableNames.ID} = {_Request.deEntry.ID}";
+                }
 
                 if (FuncsVSQL.SQLNonQuery(_commamd) > 0)
                 {

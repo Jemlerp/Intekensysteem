@@ -3,25 +3,65 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Http;
+using System.Net.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using ErFunc;
+using System.Net;
 
 namespace Server.Controllers
 {
-    public class DeController : System.Web.Mvc.Controller
+    public class HetController : ApiController
     {
-        public class HomeController : System.Web.Mvc.Controller
+        [HttpGet]
+        public HttpResponseMessage Index()
         {
-            public string Index()
-            {
-                return "Ja";
-            }
-        }
-    }
+            DBDingus.AcountTableEntry sysUser = new DBDingus.AcountTableEntry();
 
-    public class ValuesController : ApiController
-    {
+            NetCom.ServerRequestOverzightFromOneDate request = new NetCom.ServerRequestOverzightFromOneDate();
+            request.useToday = true;
+            request.alsoReturnExUsers = false;
+
+            NetCom.ServerResponseOverzightFromOneDate resp = FuncsVController.overzight(sysUser, request);
+
+            DateTime lkNu = FuncsVController.GetDateTimeFromSqlDatabase();
+
+            List<string> DaiNiBan = new List<string>();
+
+            string DaiIkan = lkNu.ToString() + "\r\n \n";
+
+            foreach (var x in resp.EtList)
+            {
+                string toAdd = "";
+                toAdd = x.UsE.VoorNaam + "  " + x.UsE.AchterNaam;
+                if (x.hasTodayRegEntry)
+                {
+                    if (x.RegE.HeeftIngetekend)
+                    {
+                        toAdd += "   In:" + x.RegE.TimeInteken.ToString("hh\\:mm\\:ss");
+                        if (x.RegE.IsAanwezig)
+                        {
+                            toAdd += "   Uit:Aanwezig   Totaal:" + lkNu.Subtract(x.RegE.TimeInteken).ToString("hh\\:mm\\:ss\\.fff");
+                        }
+                        else
+                        {
+                            toAdd += $"   Uit:{x.RegE.TimeUitteken.ToString("hh\\:mm\\:ss")}   Totaal:" + x.RegE.TimeUitteken.Subtract(x.RegE.TimeInteken).ToString("hh\\:mm\\:ss\\.fff");
+                        }
+                    }
+                }
+                DaiNiBan.Add(toAdd + "\r\n \n");
+            }
+
+            foreach (var x in DaiNiBan.OrderBy(x => x.Length))
+            {
+                DaiIkan += x;
+            }
+
+            HttpResponseMessage toReturn = new HttpResponseMessage(HttpStatusCode.OK);
+            toReturn.Content = new StringContent(DaiIkan, System.Text.Encoding.UTF8, "text/plain");
+            return toReturn;
+        }
+
         private T Deserialise<T>(string _toDeserialie)
         {
             return JsonConvert.DeserializeObject<T>(_toDeserialie);
@@ -38,7 +78,7 @@ namespace Server.Controllers
         }
 
         [HttpPost]
-        public NetCom.ServerResponse tokidokiaru([FromBody]NetCom.ServerRequest _request)
+        public HttpResponseMessage tokidokiaru([FromBody]NetCom.ServerRequest _request)
         {
             NetCom.ServerResponse toReturn = new NetCom.ServerResponse();
             toReturn.IsErrorOccurred = false;
@@ -83,15 +123,19 @@ namespace Server.Controllers
                     case NetCom.WhatIsThisEnum.ChangeAcountTable:
                         toReturn.Response = FuncsVController.ChangeAcountTable(usingUser, Deserialise<NetCom.ServerRequestChangeAcountTable>(param));
                         break;
+                    default: throw new Exception("bla bla bla lala la lal aaaaa noob");
                 }
-                return toReturn;
-                throw new Exception("ahodashi");
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Content = new StringContent(JsonConvert.SerializeObject(toReturn), System.Text.Encoding.UTF8, "application/json");
+                return response;
             }
             catch (Exception ex)
             {
                 toReturn.IsErrorOccurred = true;
                 toReturn.ErrorInfo.ErrorMessage = ex.Message;
-                return toReturn;
+                HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Content = new StringContent(JsonConvert.SerializeObject(toReturn), System.Text.Encoding.UTF8, "application/json");
+                return response;
             }
         }
     }

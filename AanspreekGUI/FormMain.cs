@@ -27,6 +27,8 @@ namespace AanspreekGUI
         bool _ALLOWCLEARINPUTSONRELOAD = true;
         private delegate void updateOverzichtDelegate();
         List<DBDingus.CombUserAfwEntry> _LastRecivedOverzight = new List<DBDingus.CombUserAfwEntry>(); // to compair with new one en als current selected veranderd is input clearen
+        bool _LastRecivedOverzightDateIsToday = true;
+        DateTime _LastRecivedOverzightDate = new DateTime();
         DBDingus.CombUserAfwEntry _CurrentlySelectedUser = new DBDingus.CombUserAfwEntry();
         bool _NoConnectionMode = false;
         Timer _TimerReloadOverzicht = new Timer();
@@ -119,6 +121,12 @@ namespace AanspreekGUI
                 request.NFCCode = _CurrentlySelectedUser.UsE.NFCID;
                 NetCom.ServerResponse response;
 
+                if (!checkBoxSeUserTodayAsDate.Checked)
+                {
+                    request.DateIsToday = false;
+                    request.Date = dateTimePickerSeDateToListTo.Value.Date;
+                }
+
                 try
                 {
                     response = webbbbrrrrrry(request);
@@ -136,6 +144,7 @@ namespace AanspreekGUI
                 else
                 {
                     ReloadOverzight();
+                    dataGridView1_SelectionChanged(null, null);
                 }
             }
         }
@@ -157,79 +166,133 @@ namespace AanspreekGUI
         {
             if (!_NoConnectionMode)
             {
+                _TimerReloadOverzicht.Stop();
+                NetCom.ServerRequestOverzightFromOneDate request = new NetCom.ServerRequestOverzightFromOneDate();
+                if (checkBoxSeUserTodayAsDate.Checked)
+                {
+                    request.useToday = true;
+                }
+                else
+                {
+                    request.useToday = false;
+                    request.dateToGetOverzightFrom = dateTimePickerSeDateToListTo.Value.Date;
+                    _LastRecivedOverzightDate = dateTimePickerSeDateToListTo.Value.Date;
+                }
+                _LastRecivedOverzightDateIsToday = checkBoxSeUserTodayAsDate.Checked;
+                if (checkBoxSeShowExUsers.Checked)
+                {
+                    request.alsoReturnExUsers = true;
+                }
+                NetCom.ServerResponse response;
                 try
                 {
-                    _TimerReloadOverzicht.Stop();
-                    NetCom.ServerRequestOverzightFromOneDate request = new NetCom.ServerRequestOverzightFromOneDate();
-                    if (checkBoxSeUserTodayAsDate.Checked)
+                    Stopwatch sw = new Stopwatch();
+                    sw.Start();
+                    response = webbbbrrrrrry(request);
+                    label2.Text = sw.ElapsedMilliseconds.ToString();
+                }
+                catch
+                { // als server down is (als school in brand staat...)
+                  //   if (MessageBox.Show("Kan Niet Verbinden Met Server", "Ga Naar Alarm Modus?", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes) {
+                    enableNoConnectionMode();
+                    //   } else {
+                    //       this.BackColor = Color.Yellow;//times are outdated
+                    //       panel2.BackColor = Color.Yellow;
+                    //   }
+                    _TimerReloadOverzicht.Start();
+                    return;
+                }
+                NetCom.ServerResponseOverzightFromOneDate returnedValue;
+                if (response.IsErrorOccurred)
+                {
+                    throw new Exception(response.ErrorInfo.ErrorMessage);
+                }
+                else
+                {
+                    //--
+                    int _SelectedRowNummber = 0;
+                    if (dataGridView1.CurrentCell != null)
                     {
-                        request.useToday = true;
+                        _SelectedRowNummber = dataGridView1.CurrentCell.RowIndex;
                     }
-                    else
+                    ListSortDirection _oldSortOrder;
+                    DataGridViewColumn _oldSortCol;
+                    _oldSortOrder = dataGridView1.SortOrder == SortOrder.Ascending ?
+                     ListSortDirection.Ascending : ListSortDirection.Descending;
+                    _oldSortCol = dataGridView1.SortedColumn;
+                    ///--
+                    if (reloadFromServer)
                     {
-                        request.useToday = false;
-                        request.dateToGetOverzightFrom = dateTimePickerSeDateToListTo.Value;
-                    }
-                    if (checkBoxSeShowExUsers.Checked)
-                    {
-                        request.alsoReturnExUsers = true;
-                    }
-                    NetCom.ServerResponse response;
-                    try
-                    {
-                        Stopwatch sw = new Stopwatch();
-                        sw.Start();
-                        response = webbbbrrrrrry(request);
-                        label2.Text = sw.ElapsedMilliseconds.ToString();
-                    }
-                    catch
-                    { // als server down is (als school in brand staat...)
-                      //   if (MessageBox.Show("Kan Niet Verbinden Met Server", "Ga Naar Alarm Modus?", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes) {
-                        enableNoConnectionMode();
-                        //   } else {
-                        //       this.BackColor = Color.Yellow;//times are outdated
-                        //       panel2.BackColor = Color.Yellow;
-                        //   }
-                        _TimerReloadOverzicht.Start();
-                        return;
-                    }
-                    NetCom.ServerResponseOverzightFromOneDate returnedValue;
-                    if (response.IsErrorOccurred)
-                    {
-                        throw new Exception(response.ErrorInfo.ErrorMessage);
-                    }
-                    else
-                    {
-                        //--
-                        int _SelectedRowNummber = 0;
-                        if (dataGridView1.CurrentCell != null)
-                        {
-                            _SelectedRowNummber = dataGridView1.CurrentCell.RowIndex;
-                        }
-                        ListSortDirection _oldSortOrder;
-                        DataGridViewColumn _oldSortCol;
-                        _oldSortOrder = dataGridView1.SortOrder == SortOrder.Ascending ?
-                         ListSortDirection.Ascending : ListSortDirection.Descending;
-                        _oldSortCol = dataGridView1.SortedColumn;
-                        ///--
-                        if (reloadFromServer)
-                        {
-                            returnedValue = JsonConvert.DeserializeObject<NetCom.ServerResponseOverzightFromOneDate>(JsonConvert.SerializeObject(response.Response));
+                        returnedValue = JsonConvert.DeserializeObject<NetCom.ServerResponseOverzightFromOneDate>(JsonConvert.SerializeObject(response.Response));
 
-                            if (_LastRecivedOverzight != null && _CurrentlySelectedUser.UsE != null)
+                        _ALLOWCLEARINPUTSONRELOAD = false;
+
+                        if (_LastRecivedOverzight != null && _CurrentlySelectedUser.UsE != null && _CurrentlySelectedUser.RegE != null && ((_LastRecivedOverzightDateIsToday == checkBoxSeUserTodayAsDate.Checked && _LastRecivedOverzightDateIsToday == true) || _LastRecivedOverzightDate == dateTimePickerSeDateToListTo.Value.Date))
+                        {
+                            #region try 2015/2016?
+                            /*
+                            try
                             {
-                                _ALLOWCLEARINPUTSONRELOAD = true;
-
-                                #region try 1
-                                try
+                                foreach (var entry in returnedValue.EtList)
                                 {
-                                    foreach (var entry in returnedValue.EtList)
+                                    if (entry.UsE.ID == _CurrentlySelectedUser.UsE.ID)
                                     {
-                                        if (entry.UsE.ID == _CurrentlySelectedUser.UsE.ID)
+                                        if (entry.hasTodayRegEntry == _CurrentlySelectedUser.hasTodayRegEntry)
                                         {
-                                            if (entry.hasTodayRegEntry == _CurrentlySelectedUser.hasTodayRegEntry)
+                                            if (entry.RegE.ID == _CurrentlySelectedUser.RegE.ID &&
+                                                entry.RegE.HeeftIngetekend == _CurrentlySelectedUser.RegE.HeeftIngetekend &&
+                                                entry.RegE.IsAanwezig == _CurrentlySelectedUser.RegE.IsAanwezig &&
+                                                entry.RegE.IsExcurtie == _CurrentlySelectedUser.RegE.IsExcurtie &&
+                                                entry.RegE.IsFlexiebelverlof == _CurrentlySelectedUser.RegE.IsStudieverlof &&
+                                                entry.RegE.IsStudieverlof == _CurrentlySelectedUser.RegE.IsStudieverlof &&
+                                                entry.RegE.IsLaat == _CurrentlySelectedUser.RegE.IsLaat &&
+                                                entry.RegE.IsZiek == _CurrentlySelectedUser.RegE.IsZiek &&
+                                                entry.RegE.Opmerking == _CurrentlySelectedUser.RegE.Opmerking)
                                             {
-                                                if (entry.RegE.ID == _CurrentlySelectedUser.RegE.ID &&
+                                                if (entry.RegE.HeeftIngetekend)
+                                                {
+                                                    if (entry.RegE.TimeInteken == _CurrentlySelectedUser.RegE.TimeInteken)
+                                                    {
+                                                        if (entry.RegE.IsAanwezig == false)
+                                                        {
+                                                            if (entry.RegE.TimeUitteken == _CurrentlySelectedUser.RegE.TimeUitteken)
+                                                            {
+                                                                if (entry.RegE.IsLaat)
+                                                                {
+                                                                    if (entry.RegE.Verwachtetijdvanaanwezighijd == _CurrentlySelectedUser.RegE.Verwachtetijdvanaanwezighijd)
+                                                                    {
+                                                                        _ALLOWCLEARINPUTSONRELOAD = false;
+                                                                    }
+                                                                    break;
+                                                                }
+                                                                _ALLOWCLEARINPUTSONRELOAD = false;
+                                                            }
+                                                            break;
+                                                        }
+                                                        _ALLOWCLEARINPUTSONRELOAD = false;
+                                                    }
+                                                    break;
+                                                }
+                                                _ALLOWCLEARINPUTSONRELOAD = false;
+                                            }
+                                            break;
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+                            catch (Exception ex) { string kanker = ex.Message; _ALLOWCLEARINPUTSONRELOAD = true; }
+                            */
+                            #endregion
+
+
+                            #region try 2017
+                            try
+                            {
+                                DBDingus.CombUserAfwEntry entry = returnedValue.EtList.First(x => x.UsE.ID == _CurrentlySelectedUser.UsE.ID);
+                                if (entry.RegE != null)
+                                {
+                                    if (entry.RegE.ID == _CurrentlySelectedUser.RegE.ID &&
                                                     entry.RegE.HeeftIngetekend == _CurrentlySelectedUser.RegE.HeeftIngetekend &&
                                                     entry.RegE.IsAanwezig == _CurrentlySelectedUser.RegE.IsAanwezig &&
                                                     entry.RegE.IsExcurtie == _CurrentlySelectedUser.RegE.IsExcurtie &&
@@ -238,108 +301,82 @@ namespace AanspreekGUI
                                                     entry.RegE.IsLaat == _CurrentlySelectedUser.RegE.IsLaat &&
                                                     entry.RegE.IsZiek == _CurrentlySelectedUser.RegE.IsZiek &&
                                                     entry.RegE.Opmerking == _CurrentlySelectedUser.RegE.Opmerking)
-                                                {
-                                                    if (entry.RegE.HeeftIngetekend)
-                                                    {
-                                                        if (entry.RegE.TimeInteken == _CurrentlySelectedUser.RegE.TimeInteken)
-                                                        {
-                                                            if (entry.RegE.IsAanwezig == false)
-                                                            {
-                                                                if (entry.RegE.TimeUitteken == _CurrentlySelectedUser.RegE.TimeUitteken)
-                                                                {
-                                                                    if (entry.RegE.IsLaat)
-                                                                    {
-                                                                        if (entry.RegE.Verwachtetijdvanaanwezighijd == _CurrentlySelectedUser.RegE.Verwachtetijdvanaanwezighijd)
-                                                                        {
-                                                                            _ALLOWCLEARINPUTSONRELOAD = false;
-                                                                        }
-                                                                        break;
-                                                                    }
-                                                                    _ALLOWCLEARINPUTSONRELOAD = false;
-                                                                }
-                                                                break;
-                                                            }
-                                                            _ALLOWCLEARINPUTSONRELOAD = false;
-                                                        }
-                                                        break;
-                                                    }
-                                                    _ALLOWCLEARINPUTSONRELOAD = false;
-                                                }
-                                                break;
-                                            }
-                                            break;
-                                        }
+                                    {
+                                        _ALLOWCLEARINPUTSONRELOAD = false;
+                                    }
+                                    else
+                                    {
+                                        _ALLOWCLEARINPUTSONRELOAD = true;
                                     }
                                 }
-                                catch (Exception ex) { string kanker = ex.Message; _ALLOWCLEARINPUTSONRELOAD = true; }
-                                #endregion
 
                             }
-
-                            _LastRecivedOverzight = returnedValue.EtList;
-
-                        }
-                        else
-                        {
-                            returnedValue = new NetCom.ServerResponseOverzightFromOneDate();
-                            returnedValue.EtList = _LastRecivedOverzight;
-                        }
-                        if (textBoxZoekOp.Text.Trim() == "")
-                        {
-                            dataGridView1.SelectionChanged -= dataGridView1_SelectionChanged;
-                            dataGridView1.DataSource = FormHelp.UserInfoListToDataTableForDataGridDisplay(returnedValue.EtList, returnedValue.SQlDateTime);
-                            dataGridView1.SelectionChanged += new EventHandler(dataGridView1_SelectionChanged);
-                            dataGridView1.Refresh();
-                        }
-                        else
-                        { //zoek op
-                            List<DBDingus.CombUserAfwEntry> sortedList = new List<DBDingus.CombUserAfwEntry>();
-                            foreach (DBDingus.CombUserAfwEntry perso in returnedValue.EtList)
+                            catch (Exception ex)
                             {
-                                if (perso.UsE.VoorNaam.Contains(textBoxZoekOp.Text.Trim()) || perso.UsE.AchterNaam.Contains(textBoxZoekOp.Text.Trim()))
-                                {
-                                    sortedList.Add(perso);
-                                }
+                                _ALLOWCLEARINPUTSONRELOAD = true;
                             }
-                            dataGridView1.SelectionChanged -= dataGridView1_SelectionChanged;
-                            dataGridView1.DataSource = FormHelp.UserInfoListToDataTableForDataGridDisplay(sortedList, returnedValue.SQlDateTime);
-                            dataGridView1.SelectionChanged += new EventHandler(dataGridView1_SelectionChanged);
-                            dataGridView1.Refresh();
+                            #endregion
                         }
-                        this.BackColor = SystemColors.Control; // times are uptodate
-                        panel2.BackColor = SystemColors.Control;
-                        //--
-                        if (_oldSortCol != null)
-                        {
-                            DataGridViewColumn newCol = dataGridView1.Columns[_oldSortCol.Name];
-                            dataGridView1.Sort(newCol, _oldSortOrder);
-                        }
-                        try
-                        {// voor als row[x] er niet (meer) is
-                            if (dataGridView1.CurrentCell != null)
-                            {
-                                dataGridView1.CurrentCell = dataGridView1[1, _SelectedRowNummber];
-                            }
-                        }
-                        catch
-                        {
-                            dataGridView1.ClearSelection();
-                        }
-                        ///--
-                        dataGridView1.Columns[0].Width = 130;
-                        dataGridView1.Columns[1].Width = 140;
-                        dataGridView1.Columns[2].Width = 130;
-                        dataGridView1.Columns[3].Width = 130;
-                        dataGridView1.Columns[4].Width = dataGridView1.Width - dataGridView1.Columns[0].Width - dataGridView1.Columns[1].Width - dataGridView1.Columns[2].Width - dataGridView1.Columns[3].Width - 3 - 20;
-                        _TimerReloadOverzicht.Start();
+
+                        _LastRecivedOverzight = returnedValue.EtList;
+
                     }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message);
+                    else
+                    {
+                        returnedValue = new NetCom.ServerResponseOverzightFromOneDate();
+                        returnedValue.EtList = _LastRecivedOverzight;
+                    }
+                    if (textBoxZoekOp.Text.Trim() == "")
+                    {
+                        dataGridView1.SelectionChanged -= dataGridView1_SelectionChanged;
+                        dataGridView1.DataSource = FormHelp.UserInfoListToDataTableForDataGridDisplay(returnedValue.EtList, returnedValue.SQlDateTime);
+                        dataGridView1.SelectionChanged += new EventHandler(dataGridView1_SelectionChanged);
+                        dataGridView1.Refresh();
+                    }
+                    else
+                    { //zoek op
+                        List<DBDingus.CombUserAfwEntry> sortedList = new List<DBDingus.CombUserAfwEntry>();
+                        foreach (DBDingus.CombUserAfwEntry perso in returnedValue.EtList)
+                        {
+                            if (perso.UsE.VoorNaam.Contains(textBoxZoekOp.Text.Trim()) || perso.UsE.AchterNaam.Contains(textBoxZoekOp.Text.Trim()))
+                            {
+                                sortedList.Add(perso);
+                            }
+                        }
+                        dataGridView1.SelectionChanged -= dataGridView1_SelectionChanged;
+                        dataGridView1.DataSource = FormHelp.UserInfoListToDataTableForDataGridDisplay(sortedList, returnedValue.SQlDateTime);
+                        dataGridView1.SelectionChanged += new EventHandler(dataGridView1_SelectionChanged);
+                        dataGridView1.Refresh();
+                    }
+                    this.BackColor = SystemColors.Control; // times are uptodate
+                    panel2.BackColor = SystemColors.Control;
+                    //--
+                    if (_oldSortCol != null)
+                    {
+                        DataGridViewColumn newCol = dataGridView1.Columns[_oldSortCol.Name];
+                        dataGridView1.Sort(newCol, _oldSortOrder);
+                    }
+                    try
+                    {// voor als row[x] er niet (meer) is
+                        if (dataGridView1.CurrentCell != null)
+                        {
+                            dataGridView1.CurrentCell = dataGridView1[1, _SelectedRowNummber];
+                        }
+                    }
+                    catch
+                    {
+                        dataGridView1.ClearSelection();
+                    }
+                    ///--
+                    dataGridView1.Columns[0].Width = 130;
+                    dataGridView1.Columns[1].Width = 140;
+                    dataGridView1.Columns[2].Width = 130;
+                    dataGridView1.Columns[3].Width = 130;
+                    dataGridView1.Columns[4].Width = dataGridView1.Width - dataGridView1.Columns[0].Width - dataGridView1.Columns[1].Width - dataGridView1.Columns[2].Width - dataGridView1.Columns[3].Width - 3 - 20;
                     _TimerReloadOverzicht.Start();
                 }
             }
+
             else
             {
                 if (FormHelp.CanConnectToServer(_ApiAddres))
@@ -368,7 +405,11 @@ namespace AanspreekGUI
                     request.isNieuwEntry = true;
                     request.deEntry = new DBDingus.RegistratieTableTableEntry();
                     request.deEntry.IDOfUserRelated = _CurrentlySelectedUser.UsE.ID;
-                    request.newEntryDateIsToday = true;
+                    request.newEntryDateIsToday = checkBoxSeUserTodayAsDate.Checked;
+                    if (!checkBoxSeUserTodayAsDate.Checked)
+                    {
+                        request.deEntry.Date = dateTimePickerSeDateToListTo.Value.Date;
+                    }
                 }
                 request.deEntry.Opmerking = textBoxOpmerking.Text;
                 if (dateTimePickerTijdIn.Enabled)
@@ -494,91 +535,34 @@ namespace AanspreekGUI
 
         private void dataGridView1_SelectionChanged(object sender, EventArgs e)
         {
-            if (dataGridView1.SelectedRows.Count == 0) { return; }
-            DBDingus.CombUserAfwEntry selectedUserData = new DBDingus.CombUserAfwEntry();
-            string _voorNaam = dataGridView1.SelectedRows[0].Cells[0].Value.ToString();
-            string _achterNaam = dataGridView1.SelectedRows[0].Cells[1].Value.ToString();
-            bool found = false;
-            foreach (DBDingus.CombUserAfwEntry entry in _LastRecivedOverzight)
+            try
             {
-                if (entry.UsE.VoorNaam == _voorNaam && entry.UsE.AchterNaam == _achterNaam) { selectedUserData = entry; found = true; break; }
-            }
-            if (!found) { MessageBox.Show("Cant Find Selected User"); return; } //bleh            
-            _CurrentlySelectedUser = selectedUserData;
+                if (dataGridView1.SelectedRows.Count == 0) { return; }
+                DBDingus.CombUserAfwEntry selectedUserData = new DBDingus.CombUserAfwEntry();
+                string _voorNaam = dataGridView1.SelectedRows[0].Cells[0].Value.ToString();
+                string _achterNaam = dataGridView1.SelectedRows[0].Cells[1].Value.ToString();
+                bool found = false;
+                foreach (DBDingus.CombUserAfwEntry entry in _LastRecivedOverzight)
+                {
+                    if (entry.UsE.VoorNaam == _voorNaam && entry.UsE.AchterNaam == _achterNaam) { selectedUserData = entry; found = true; break; }
+                }
+                if (!found) { MessageBox.Show("Cant Find Selected User"); return; } //bleh            
+                _CurrentlySelectedUser = selectedUserData;
 
-            if (_ALLOWCLEARINPUTSONRELOAD)
-            {
-
-                disableEditControls();
-
-                labelVoorNaam.Text = selectedUserData.UsE.VoorNaam;
-                labelAchterNaam.Text = selectedUserData.UsE.AchterNaam;
-
-                buttonSave.Enabled = true;
-                textBoxOpmerking.Enabled = true;
-                //enable buttons / set values
-
+                //quick fix````````````````````````````````````````````````````````````````
+                buttonTekenIn.Enabled = false;
+                buttonTekenUit.Enabled = false;
                 if (selectedUserData.hasTodayRegEntry)
                 {
-                    buttonSave.Enabled = true;
-                    textBoxOpmerking.Text = selectedUserData.RegE.Opmerking;
-                    textBoxOpmerking.Enabled = true;
-
-                    //select item in dropdown
-                    bool erIsEenAfwezigNotatie = true;
-                    if (selectedUserData.RegE.IsZiek)
-                    {
-                        comboBoxRedenAfwezig.SelectedItem = comboBoxRedenAfwezig.Items[1];
-                    }
-                    else
-                    if (selectedUserData.RegE.IsFlexiebelverlof)
-                    {
-                        comboBoxRedenAfwezig.SelectedItem = comboBoxRedenAfwezig.Items[3];
-                    }
-                    else
-                    if (selectedUserData.RegE.IsStudieverlof)
-                    {
-                        comboBoxRedenAfwezig.SelectedItem = comboBoxRedenAfwezig.Items[2];
-                    }
-                    else
-                    if (selectedUserData.RegE.IsExcurtie)
-                    {
-                        comboBoxRedenAfwezig.SelectedItem = comboBoxRedenAfwezig.Items[4];
-                    }
-                    else
-                    if (selectedUserData.RegE.IsLaat)
-                    {
-                        comboBoxRedenAfwezig.SelectedItem = comboBoxRedenAfwezig.Items[0];
-                        dateTimePickerVerwachteTijdVanAankomst.Value = Convert.ToDateTime(selectedUserData.RegE.Verwachtetijdvanaanwezighijd.ToString("hh\\:mm\\:ss"));
-                    }
-                    else
-                    if (selectedUserData.RegE.IsToegestaalAfwezig)
-                    {
-                        comboBoxRedenAfwezig.SelectedItem = comboBoxRedenAfwezig.Items[5];
-                    }
-                    else
-                    {
-                        erIsEenAfwezigNotatie = false;
-                    }
-
-                    if (erIsEenAfwezigNotatie)
-                    {
-                        checkBoxHeefAfwezigReden.Checked = true;
-                    }
-
                     if (selectedUserData.RegE.HeeftIngetekend)
                     {
                         buttonClearInEnUitTeken.Enabled = true;
-                        dateTimePickerTijdIn.Enabled = true;
-                        dateTimePickerTijdIn.Value = Convert.ToDateTime(selectedUserData.RegE.TimeInteken.ToString("hh\\:mm\\:ss"));
                         if (selectedUserData.RegE.IsAanwezig)
                         {
                             buttonTekenUit.Enabled = true;
                         }
                         else
                         {
-                            dateTimePickerTimeUit.Enabled = true;
-                            dateTimePickerTimeUit.Value = Convert.ToDateTime(selectedUserData.RegE.TimeUitteken.ToString("hh\\:mm\\:ss"));
                             buttonTekenIn.Enabled = true; // anulleer uitteken
                         }
                     }
@@ -591,8 +575,101 @@ namespace AanspreekGUI
                 {
                     buttonTekenIn.Enabled = true;
                 }
+
+                ///\quick fix ````````````````````````````````````````````````````````
+
+                if (_ALLOWCLEARINPUTSONRELOAD)
+                {
+
+                    disableEditControls();
+
+                    labelVoorNaam.Text = selectedUserData.UsE.VoorNaam;
+                    labelAchterNaam.Text = selectedUserData.UsE.AchterNaam;
+
+                    buttonSave.Enabled = true;
+                    textBoxOpmerking.Enabled = true;
+                    //enable buttons / set values
+
+                    if (selectedUserData.hasTodayRegEntry)
+                    {
+                        buttonSave.Enabled = true;
+                        textBoxOpmerking.Text = selectedUserData.RegE.Opmerking;
+                        textBoxOpmerking.Enabled = true;
+
+                        //select item in dropdown
+                        bool erIsEenAfwezigNotatie = true;
+                        if (selectedUserData.RegE.IsZiek)
+                        {
+                            comboBoxRedenAfwezig.SelectedItem = comboBoxRedenAfwezig.Items[1];
+                        }
+                        else
+                        if (selectedUserData.RegE.IsFlexiebelverlof)
+                        {
+                            comboBoxRedenAfwezig.SelectedItem = comboBoxRedenAfwezig.Items[3];
+                        }
+                        else
+                        if (selectedUserData.RegE.IsStudieverlof)
+                        {
+                            comboBoxRedenAfwezig.SelectedItem = comboBoxRedenAfwezig.Items[2];
+                        }
+                        else
+                        if (selectedUserData.RegE.IsExcurtie)
+                        {
+                            comboBoxRedenAfwezig.SelectedItem = comboBoxRedenAfwezig.Items[4];
+                        }
+                        else
+                        if (selectedUserData.RegE.IsLaat)
+                        {
+                            comboBoxRedenAfwezig.SelectedItem = comboBoxRedenAfwezig.Items[0];
+                            dateTimePickerVerwachteTijdVanAankomst.Value = Convert.ToDateTime(selectedUserData.RegE.Verwachtetijdvanaanwezighijd.ToString("hh\\:mm\\:ss"));
+                        }
+                        else
+                        if (selectedUserData.RegE.IsToegestaalAfwezig)
+                        {
+                            comboBoxRedenAfwezig.SelectedItem = comboBoxRedenAfwezig.Items[5];
+                        }
+                        else
+                        {
+                            erIsEenAfwezigNotatie = false;
+                        }
+
+                        if (erIsEenAfwezigNotatie)
+                        {
+                            checkBoxHeefAfwezigReden.Checked = true;
+                        }
+
+                        if (selectedUserData.RegE.HeeftIngetekend)
+                        {
+                            buttonClearInEnUitTeken.Enabled = true;
+                            dateTimePickerTijdIn.Enabled = true;
+                            dateTimePickerTijdIn.Value = Convert.ToDateTime(selectedUserData.RegE.TimeInteken.ToString("hh\\:mm\\:ss"));
+                            if (selectedUserData.RegE.IsAanwezig)
+                            {
+                                buttonTekenUit.Enabled = true;
+                            }
+                            else
+                            {
+                                dateTimePickerTimeUit.Enabled = true;
+                                dateTimePickerTimeUit.Value = Convert.ToDateTime(selectedUserData.RegE.TimeUitteken.ToString("hh\\:mm\\:ss"));
+                                buttonTekenIn.Enabled = true; // anulleer uitteken
+                            }
+                        }
+                        else
+                        {
+                            buttonTekenIn.Enabled = true;
+                        }
+                    }
+                    else
+                    {
+                        buttonTekenIn.Enabled = true;
+                    }
+                }
+                _ALLOWCLEARINPUTSONRELOAD = true;
             }
-            _ALLOWCLEARINPUTSONRELOAD = true;
+            catch (Exception ex)
+            {
+                var x = ex.Message;
+            }
         }
 
         private void closeProgramToolStripMenuItem_Click(object sender, EventArgs e)

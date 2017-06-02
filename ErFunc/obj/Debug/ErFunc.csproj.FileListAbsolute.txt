@@ -4,4 +4,3 @@ C:\Users\Ichigo\Documents\GitHub\Intekensysteem\ErFunc\obj\Debug\ErFunc.dll
 C:\Users\Ichigo\Documents\GitHub\Intekensysteem\ErFunc\obj\Debug\ErFunc.pdb
 C:\Users\Ichigo\Documents\GitHub\Intekensysteem\ErFunc\bin\Debug\Newtonsoft.Json.dll
 C:\Users\Ichigo\Documents\GitHub\Intekensysteem\ErFunc\bin\Debug\Newtonsoft.Json.xml
-C:\Users\Ichigo\Documents\GitHub\Intekensysteem\ErFunc\obj\Debug\ErFunc.csprojResolveAssemblyReference.cache

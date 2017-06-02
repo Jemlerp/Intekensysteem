@@ -117,6 +117,8 @@ namespace ErFunc
         {
             public WhatIsThisEnum WatIsDit { get { return WhatIsThisEnum.RInteken; } }
             public string NFCCode { get; set; }
+            public bool DateIsToday { get; set; } = true;
+            public DateTime Date { get; set; }
         }
 
         public class ServerResponseInteken
