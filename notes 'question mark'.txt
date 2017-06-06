@@ -1,0 +1,313 @@
+<db raw dates>
+table x{
+	int id
+	date date
+	//string note //will ik niet coden
+}
+
+list<x> erList = select * from datedatedagtable where date between cast('19/03/2000' as date) and cast('19/03/2018' as date)
+
+<uuren dingus>
+alleDeUsersToGetListFor list<UserEntry>
+alleDeModifiersThatApply(
+	check on eatch modtable entry that does not end before our begin date
+	seporate list of objects with all de modfications that apply(
+		b = select * from modtable where enddate > @ourBeginDate
+		
+		{ <kk>
+			datetime dateOfApply
+			int userIdToApplyTo
+			bool OnlyIsAddHours // optimization
+			timespan hoursToAdd
+			bool StudieVerlof
+			bool Exurtie
+			bool FlexiebleVerlof						
+		}
+		
+		list<kk> bkk = blablafuntion(b);
+		
+		list<datetime> alledagenDatErEenDagIs = formhelp.getalldaysbetween(@ourbgindate, @outenddate);
+		
+		list<RegTableEntry> alleDeRegEntries = idk jsut get it
+		
+		list<comk> compkk;
+		foreatch datetime dag in alledagenDatErEenDagIs(
+			oneDayEntry ent;
+			ent.date = dag
+			foreatch var user in alldeuserentrrys //<get ex users?> is where?
+				oneDayoneUserEnty kanEnt
+				
+				bool add0645uur = false	
+
+				foreatch enn in bkk.select(x => x.id == user.id):
+					if enn.excur || stu || flex:
+						add0645uur = true
+					
+					kanEnt.timetotal += enn.hoersToAdd
+						
+				
+				elEntry = alleDeRegEntries.select(x => x.id == user.id && x.date == dag)
+				
+				if elEntry.excur || stu || flex:
+					add0645uur = true
+				
+				if !add0645uur:
+					kanEnt.timetotal += elEntry.out - elEntry.in;
+				
+				oneDayEntry.add(onedaoneuserentry);
+			compkk.add(onDayEntry);
+		)
+		
+		finishedoverzight banaan;
+		foreatfch user 
+			completeOfOneUsers com
+			list<oneDayoneUserEnty> kkkk = compkk.select(x => x.id == user.id)
+			foreatch k in kkkk:
+				com.totaltime += kkkk
+				
+			banaan.list.add(com)
+	)
+
+
+
+//setting 
+
+table settings{ //is dit nodig?
+	timespan uurPerSchoolDag
+
+}
+
+
+
+
+//example wee post 
+
+21-3-2017/28-3-207 (WEEK OVERZIGHT)
+	naam					a    offset  ziek // nog meer info>?
+ayariayma yakuza         |  28 | 0     | 4
+binariarenoare kobayashi |  27 | -1    | 1
+henk arbeider            |  18 | -9    | 0
+.
+.
+.
+.
+
+By Team DYslect Lt. - This Message Was Created In 0.120736 seconds
+
+//end
+
+MODIFIER TABLE 
+
+	DATE FROM //met
+	DATE TOT //en met
+	
+	varchar relatedUserids //json; baylife
+		
+	DATESELECT EFECTIVEON //bool array
+		mon
+		din
+		
+		do
+		vr
+	
+	bool isStudieVerlof
+	bool isExursie
+	bool isFlexibolelelverlof
+	
+	INT hoursToAdd
+	VARCHAR omschrijvuing
+bv 
+
+	
+
+
+
+
+SETTINGS TABLE
+
+	ALLE SCHOOL DAGEN
+	
+
+
+
+
+	
+loging
+
+table rows: /
+
+varchar^json : actieDetails : actie die gedaan is door user
+
+int : relatedAcountId : primary key van user acount
+varchar : relatedAcountName : naam van user die actie gedaan heefd
+
+bit : isCalledByIntekenApp : easyer searthing in table 
+bit : isCalledByAanspeekpuntApp : ...
+
+bit : isManualEntryChange : easyer searthing for cheaters // alle admin dingen zitten hier ook in
+bit : isLoginOrLogout : kijken hoelang mensen met die dingen bezig zijn
+
+\
+
+#region een
+
+class logTosaveToDatabase{
+	public ActionLogEvent [get;set;]
+
+
+}
+
+class ActionLogEvent{
+ enum Action{
+	inofuiteken,
+	manualdataedit,
+	
+ }
+	
+ class Wraping : Iknowing{
+	Action deaction {get;set;}
+	object Objeect {get;set;}
+	int logginVersion {get;set;}
+ }
+
+ interface IKnowing{
+ public Action {get;set;}
+ }
+
+ public TInOfUiteken{
+	for user x:
+	time inteken 
+ }
+
+
+
+}
+#endregion
+
+
+
+
+
+
+
+
+# oud >
+mogilike langduuurige werking.
+overzigtelijk.
+compackt.
+makelijk?
+
+__________________
+TABLE USER: 
+Int ID
+String VoorNaam
+String AchterNaam
+String nfcId
+bool isStudentDieOpSchoolZit //new
+__________________
+TABLE AANWEZIGHIJD:
+Int ID
+Int ID of user related 
+Date day
+Time inteken
+Time uiteken
+bool aanwezig // makerlijker
+__________________
+TABLE afwezig:
+Int ID
+Int ID of user related
+Date date
+bool isziek
+bool isflexibelverlof
+bool isStudieVerlof
+bool isExursie
+bool isLaat
+bool other
+
+varchar verwachtetijdvanaanwezighijd
+varchar andereRedenVoorAfwezighijd
+__________________
+TABLE LOG nfc scan
+//log alles dat er gebeurd zodat je dit kan zien: hariehufter tekent uit en een uur later tekent hij weer in
+Int ID
+Int ID of user related
+Date day
+Time time
+Bool doetInteken
+Bool doetUitteken
+Bool anuleerdUitteken
+__________________
+Table LOG aanspreekputdingus 
+//
+int id
+int related user id
+Date date
+time time
+
+bool zet afwezighijd 
+int(enum) afwezig typen gezet
+bool met meeromschrijving
+varcharMAX omscrjiing
+
+bool doet inteken
+bool doet uitteken
+bool anuleerd uittekenx
+__________________
+table log admin 	
+int id
+date date 
+time time 
+
+bool doetLogin
+string 
+
+
+
+__________________
+table passwords-logins
+
+
+
+
+
+
+
+__________________
+TABLE settings: //json
+//welke dagen er school zijn
+//wachtwoorden voor dingen/alle persoonnenn
+
+
+
+
+
+
+
+////////////////////////////////
+__________________
+nfcscan:
+ get user 
+ 
+ check for existing entry today if there is non meake a new
+ 
+ flip aanwezig
+ 
+ log event
+ 
+__________________
+logevent to database:
+make do nonquery 
+
+
+d5rood  d6geel leds ground
+d3 buzzer + d2 buzzer ground
+
+
+
+
+
+
+
+
+
+
