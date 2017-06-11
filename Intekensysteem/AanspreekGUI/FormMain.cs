@@ -395,7 +395,7 @@ namespace AanspreekGUI
             {
                 NetCom.ServerRequestChangeRegistratieTable request = new NetCom.ServerRequestChangeRegistratieTable();
                 //set all control values back in errr object
-                if (_CurrentlySelectedUser.hasTodayRegEntry)
+                if (_CurrentlySelectedUser.HasTodayRegEntry)
                 {
                     request.isNieuwEntry = false;
                     request.deEntry = _CurrentlySelectedUser.RegE;
@@ -552,7 +552,7 @@ namespace AanspreekGUI
                 //quick fix````````````````````````````````````````````````````````````````
                 buttonTekenIn.Enabled = false;
                 buttonTekenUit.Enabled = false;
-                if (selectedUserData.hasTodayRegEntry)
+                if (selectedUserData.HasTodayRegEntry)
                 {
                     if (selectedUserData.RegE.HeeftIngetekend)
                     {
@@ -590,7 +590,7 @@ namespace AanspreekGUI
                     textBoxOpmerking.Enabled = true;
                     //enable buttons / set values
 
-                    if (selectedUserData.hasTodayRegEntry)
+                    if (selectedUserData.HasTodayRegEntry)
                     {
                         buttonSave.Enabled = true;
                         textBoxOpmerking.Text = selectedUserData.RegE.Opmerking;

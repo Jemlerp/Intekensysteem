@@ -303,14 +303,13 @@ namespace Server
             return toReturn;
         }
 
+
         public static List<DBDingus.ModifierTableEntry> GetListMTFromReader(string _command)
         {
             SqlCommand command = new SqlCommand();
             command.CommandText = _command;
             return GetListMTFromReader(command);
         }
-
-        //if (fields.Contains(DBDingus)) { entry = ReadFromReader<>((IDataRecord)_reader, DBDingus); }
 
         public static List<DBDingus.ModifierTableEntry> GetListMTFromReader(SqlCommand _command)
         {
@@ -352,6 +351,43 @@ namespace Server
             return toReturn;
         }
 
+
+        public static List<DBDingus.IsSchoolDagTableEntry> GetLisISDFromReader(string _command)
+        {
+            return GetLisISDFromReader(new SqlCommand { CommandText = _command });
+        }
+
+        public static List<DBDingus.IsSchoolDagTableEntry> GetLisISDFromReader(SqlCommand _command)
+        {
+            List<DBDingus.IsSchoolDagTableEntry> toReturn = new List<DBDingus.IsSchoolDagTableEntry>();
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_ConnectionString))
+                {
+                    _command.Connection = connection;
+                    connection.Open();
+                    SqlDataReader _reader = _command.ExecuteReader();
+
+                    List<string> fields = new List<string>();
+                    for (int i = 0; i < _reader.FieldCount; i++)
+                    {
+                        fields.Add(_reader.GetName(i));
+                    }
+                    while (_reader.Read())
+                    {
+                        DBDingus.IsSchoolDagTableEntry entry = new DBDingus.IsSchoolDagTableEntry();
+                        if (fields.Contains(DBDingus.IsSchoolDagTableNames.ID)) { entry.ID = ReadFromReader<int>((IDataRecord)_reader, DBDingus.IsSchoolDagTableNames.ID); }
+                        if (fields.Contains(DBDingus.IsSchoolDagTableNames.Date)) { entry.Date = ReadDateTimeFromReader((IDataRecord)_reader, DBDingus.IsSchoolDagTableNames.Date); }
+                        toReturn.Add(entry);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"(ISDFromReader)ERROR @ SQL Command: {_command.CommandText} | Message: {ex.Message}");
+            }
+            return toReturn;
+        }
 
     }
 }

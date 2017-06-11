@@ -10,3 +10,10 @@ C:\Users\Jelmer\Documents\GitHub\Intekensysteem\ErFunc\bin\Debug\Newtonsoft.Json
 C:\Users\Jelmer\Documents\GitHub\Intekensysteem\ErFunc\bin\Debug\Newtonsoft.Json.xml
 C:\Users\Jelmer\Documents\GitHub\Intekensysteem\ErFunc\obj\Debug\ErFunc.dll
 C:\Users\Jelmer\Documents\GitHub\Intekensysteem\ErFunc\obj\Debug\ErFunc.pdb
+C:\Users\Jelmer\Documents\GitHub\Intekensysteem\Intekensysteem\ErFunc\bin\Debug\ErFunc.dll
+C:\Users\Jelmer\Documents\GitHub\Intekensysteem\Intekensysteem\ErFunc\bin\Debug\ErFunc.pdb
+C:\Users\Jelmer\Documents\GitHub\Intekensysteem\Intekensysteem\ErFunc\bin\Debug\Newtonsoft.Json.dll
+C:\Users\Jelmer\Documents\GitHub\Intekensysteem\Intekensysteem\ErFunc\bin\Debug\Newtonsoft.Json.xml
+C:\Users\Jelmer\Documents\GitHub\Intekensysteem\Intekensysteem\ErFunc\obj\Debug\ErFunc.csprojResolveAssemblyReference.cache
+C:\Users\Jelmer\Documents\GitHub\Intekensysteem\Intekensysteem\ErFunc\obj\Debug\ErFunc.dll
+C:\Users\Jelmer\Documents\GitHub\Intekensysteem\Intekensysteem\ErFunc\obj\Debug\ErFunc.pdb

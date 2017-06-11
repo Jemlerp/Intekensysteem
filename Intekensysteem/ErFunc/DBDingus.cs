@@ -13,7 +13,7 @@ namespace ErFunc
         {
             public RegistratieTableTableEntry RegE { get; set; }
             public UserTableTableEntry UsE { get; set; }
-            public bool hasTodayRegEntry { get; set; } = false;
+            public bool HasTodayRegEntry { get; set; } = false;
         }
 
         #region acounts/rechten
@@ -48,7 +48,8 @@ namespace ErFunc
             if (row.Table.Columns.Contains(AcountsTableNames.aanspreekpuntBevoegthijdLvl)) { if (row[AcountsTableNames.aanspreekpuntBevoegthijdLvl] != DBNull.Value) toReturn.aanspreekpuntBevoegdhijd = (int)row[AcountsTableNames.aanspreekpuntBevoegthijdLvl]; }
             if (row.Table.Columns.Contains(AcountsTableNames.adminBevoegdhijd)) { if (row[AcountsTableNames.adminBevoegdhijd] != DBNull.Value) toReturn.adminBevoegdhijd = (int)row[AcountsTableNames.adminBevoegdhijd]; }
             return toReturn;
-        }
+        }   //?
+
         public List<AcountTableEntry> GetListAcountTableEntriesFromDataTable(DataTable table)
         {
             List<AcountTableEntry> toReturn = new List<AcountTableEntry>();
@@ -57,7 +58,7 @@ namespace ErFunc
                 toReturn.Add(GetAcountTableEntryFromDataRow(row));
             }
             return toReturn;
-        }
+        }   //?
         #endregion
 
         #region UserTable
@@ -72,6 +73,7 @@ namespace ErFunc
             public static string IsActiveUser = "ZitNogOpSchool"; // !!!!!!!!
             public static string DateLeft = "DateLeft";
         }
+
         public class UserTableTableEntry
         {
             public int ID { get; set; }
@@ -82,6 +84,7 @@ namespace ErFunc
             public DateTime DateJoined { get; set; }
             public DateTime DateLeft { get; set; }
         }
+
         public UserTableTableEntry GetUserTableEntryFromDataRow(DataRow row)
         {
             UserTableTableEntry toReturn = new UserTableTableEntry();
@@ -93,7 +96,8 @@ namespace ErFunc
             if (row.Table.Columns.Contains(UserTableNames.DateJoined)) { if (row[UserTableNames.DateJoined] != DBNull.Value) toReturn.DateJoined = (DateTime)row[UserTableNames.DateJoined]; }
             if (row.Table.Columns.Contains(UserTableNames.DateLeft)) { if (row[UserTableNames.DateLeft] != DBNull.Value) toReturn.DateLeft = (DateTime)row[UserTableNames.IsActiveUser]; }
             return toReturn;
-        }
+        }   //?
+
         public List<UserTableTableEntry> GetListUserTableEntriesFromDataTable(DataTable table)
         {
             List<UserTableTableEntry> toReturn = new List<UserTableTableEntry>();
@@ -102,11 +106,11 @@ namespace ErFunc
                 toReturn.Add(GetUserTableEntryFromDataRow(row));
             }
             return toReturn;
-        }
+        }   //?
         #endregion
 
         #region RegTable
-        public class RegistratieTableNames
+        public static class RegistratieTableNames
         {
             public static string RegistratieTableName = "registratieTable";
             public static string ID = "ID";
@@ -126,6 +130,7 @@ namespace ErFunc
             public static string Verwachtetijdvanaanwezighijd = "VerwachtetijdVanaanwezighijd";
 
         }
+
         public class RegistratieTableTableEntry
         {
             public int ID { get; set; }
@@ -144,6 +149,7 @@ namespace ErFunc
             public string Opmerking { get; set; } = "";
             public TimeSpan Verwachtetijdvanaanwezighijd { get; set; }
         }
+
         public RegistratieTableTableEntry GetRegistratieTableEntryFromDataRow(DataRow row)
         {
             RegistratieTableTableEntry toReturn = new RegistratieTableTableEntry();
@@ -163,7 +169,8 @@ namespace ErFunc
             if (row.Table.Columns.Contains(RegistratieTableNames.Opmerking)) { if (row[RegistratieTableNames.Opmerking] != DBNull.Value) toReturn.Opmerking = (string)row[RegistratieTableNames.Opmerking]; }
             if (row.Table.Columns.Contains(RegistratieTableNames.Verwachtetijdvanaanwezighijd)) { if (row[RegistratieTableNames.Verwachtetijdvanaanwezighijd] != DBNull.Value) toReturn.Verwachtetijdvanaanwezighijd = (TimeSpan)row[RegistratieTableNames.Verwachtetijdvanaanwezighijd]; }
             return toReturn;
-        }
+        }   //?
+
         public List<RegistratieTableTableEntry> GetListRegistratieTableEntrysFromDataTable(DataTable table)
         {
             List<RegistratieTableTableEntry> toReturn = new List<RegistratieTableTableEntry>();
@@ -172,12 +179,11 @@ namespace ErFunc
                 toReturn.Add(GetRegistratieTableEntryFromDataRow(row));
             }
             return toReturn;
-        }
+        }   //?
         #endregion
 
         #region mod
-
-        public class ModifierTableNames
+        public static class ModifierTableNames
         {
             public static string ModifierTableName = "ModifierTable";
             public static string ID = "ID";
@@ -205,6 +211,23 @@ namespace ErFunc
             public bool isExurtie { get; set; } = false;
             public bool isFlexibelverlofoeorfsjklcghiur { get; set; } = false;
         }
+        #endregion
+
+        #region IsSchoolDag
+
+        public static class IsSchoolDagTableNames
+        {
+            public static string HetIsEenSchoolDagTableNames = "dagenDatErSchoolIsTable";
+            public static string ID = "ID";
+            public static string Date = "date";
+        }
+
+        public class IsSchoolDagTableEntry
+        {
+            public int ID;
+            public DateTime Date;
+        }
+
         #endregion
 
     }

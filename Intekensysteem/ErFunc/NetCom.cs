@@ -78,7 +78,8 @@ namespace ErFunc
 
             GetUserTable, ChangeUserTable,
             GetModTable, ChangeModTable,
-            GetAcountsTable, ChangeAcountTable
+            GetAcountsTable, ChangeAcountTable,
+            GetIsSchoolDagTable, ChangeIsSchoolDagTable
         }
 
         public class ServerRequestSqlDateTime : IKnow
@@ -158,7 +159,7 @@ namespace ErFunc
             //public DBDingus.RegistratieTableTableEntry deEntry { get; set; } // voor DBDingus.RegistratieTableTableEntry.ID als het nietuw as //SCOPE_IDENTITY() wwerrk nie
         }
 
-        // newR
+        //       newR
 
         //user
         public class ServerRequestGetUserTable : IKnow
@@ -185,6 +186,7 @@ namespace ErFunc
         {
             public bool OK { get; set; } = true;
         }
+
 
         //mod
         public class ServerRequestGetModTable : IKnow
@@ -213,6 +215,7 @@ namespace ErFunc
             public bool OK { get; set; } = true;
         }
 
+
         //acount
         public class ServerRequestGetAcountsTable : IKnow
         {
@@ -223,7 +226,7 @@ namespace ErFunc
         {
             public List<DBDingus.AcountTableEntry> deEntrys { get; set; } = new List<DBDingus.AcountTableEntry>();
         }
-
+        
 
         public class ServerRequestChangeAcountTable : IKnow
         {
@@ -235,9 +238,38 @@ namespace ErFunc
 
         public class ServerResponseChangeAcountTable
         {
-            public bool OK { get; set; } = true;
+            public bool OK { get; set; } = true; // why?
         }
 
+
+        //isSchoolDag
+        public class ServerRequestGetIsSchoolDagTable : IKnow
+        {
+            public WhatIsThisEnum WatIsDit { get { return WhatIsThisEnum.GetIsSchoolDagTable; } }
+            public DateTime year { get; set; }
+            public bool byBetween { get; set; } = false;
+            public DateTime dateFromAndWith { get; set; } = new DateTime();
+            public DateTime dateTotEnMet { get; set; } = new DateTime();
+        }
+
+        public class ServerResponseGetIsSchoolDagTable
+        {
+            public List<DBDingus.IsSchoolDagTableEntry> DagenDateErSchoolIs { get; set; } = new List<DBDingus.IsSchoolDagTableEntry>();
+        }
+
+
+        public class ServerRequestChangeIsSchoolDagTable : IKnow
+        {
+            public WhatIsThisEnum WatIsDit { get { return WhatIsThisEnum.ChangeIsSchoolDagTable; } }
+            //List<DateTime> toRemoveFromDB { get; set; } = new List<DateTime>(); // als er nog meer data makelijk bij gezet wilt worden
+            public List<DBDingus.IsSchoolDagTableEntry> deleteList = new List<DBDingus.IsSchoolDagTableEntry>(); // client can prosses by using the date or id
+            public List<DateTime> toAddToDB { get; set; } = new List<DateTime>();
+        }
+
+        public class ServerResponseChangeIsSchoolDagTable
+        {
+
+        }
 
     }
 }

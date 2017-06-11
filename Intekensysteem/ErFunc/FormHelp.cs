@@ -83,7 +83,7 @@ namespace ErFunc
                 DataRow row = ToReturn.NewRow();
                 row[Voornaam] = entry.UsE.VoorNaam;
                 row[Achternaam] = entry.UsE.AchterNaam;
-                if (entry.hasTodayRegEntry)
+                if (entry.HasTodayRegEntry)
                 {
                     string watAfwezig = "";
                     bool erIsEenAfwezigNotatie = false;

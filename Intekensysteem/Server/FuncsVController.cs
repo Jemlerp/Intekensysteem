@@ -135,7 +135,7 @@ namespace Server
                 command.CommandText = $"select * from {DBDingus.RegistratieTableNames.RegistratieTableName} where {DBDingus.RegistratieTableNames.IDOfUserRelated} = @userid and {DBDingus.RegistratieTableNames.Date} = cast('{_request.Date.ToString("yyyy\\/MM\\/dd")}' as date)";
             }
             List<DBDingus.RegistratieTableTableEntry> endResult = FuncsVSQL.GetListRTFromReader(command); //_DBDingus.GetListRTFromReader(FuncsVSQL.SQLQuery(command));
-            toReturn.TheUserWithEntryInfo.hasTodayRegEntry = true;
+            toReturn.TheUserWithEntryInfo.HasTodayRegEntry = true;
             toReturn.TheUserWithEntryInfo.RegE = endResult[0];
             return toReturn;
         }
@@ -174,7 +174,7 @@ namespace Server
                     {
                         if (Entry.IDOfUserRelated == User.ID)
                         {
-                            toPutInList.hasTodayRegEntry = true;
+                            toPutInList.HasTodayRegEntry = true;
                             toPutInList.RegE = Entry;
                             break;
                         }
@@ -305,8 +305,8 @@ namespace Server
                     command.Parameters.AddWithValue("@DateLeft", _request.deEntry.DateLeft);
                 }
 
-                
-                
+
+
 
                 if (_request.IsNewUser)
                 {
@@ -390,8 +390,10 @@ namespace Server
         //acount
         public static NetCom.ServerResponseGetAcountTable GetAcountTable(DBDingus.AcountTableEntry _MasterRightsEnty, NetCom.ServerRequestGetAcountsTable _request)
         {
-            NetCom.ServerResponseGetAcountTable toReturn = new NetCom.ServerResponseGetAcountTable();
-            toReturn.deEntrys = FuncsVSQL.GetListATFromReader($"select * from {DBDingus.AcountsTableNames.AcountsTableName}");
+            NetCom.ServerResponseGetAcountTable toReturn = new NetCom.ServerResponseGetAcountTable()
+            {
+                deEntrys = FuncsVSQL.GetListATFromReader($"select * from {DBDingus.AcountsTableNames.AcountsTableName}")
+            };
             return toReturn;
         }
 
@@ -438,5 +440,50 @@ namespace Server
 
             return toReturn;
         }
+
+        //is school dag
+        public static NetCom.ServerResponseGetIsSchoolDagTable GetIsSchooldagTable(DBDingus.AcountTableEntry _MasterRightsEnty, NetCom.ServerRequestGetIsSchoolDagTable _request)
+        {
+            NetCom.ServerResponseGetIsSchoolDagTable toReturn = new NetCom.ServerResponseGetIsSchoolDagTable();
+            if (_request.byBetween)
+            {
+                toReturn.DagenDateErSchoolIs = FuncsVSQL.GetLisISDFromReader($"select * from {DBDingus.IsSchoolDagTableNames.HetIsEenSchoolDagTableNames} where {DBDingus.IsSchoolDagTableNames.Date} between cast('{_request.dateFromAndWith.Date.ToString("yyyy\\/ MM\\/ dd")}' as date) and cast('{_request.dateTotEnMet.Date.ToString("yyyy\\/ MM\\/ dd")}' as date)");
+            }
+            else
+            {
+                toReturn.DagenDateErSchoolIs = FuncsVSQL.GetLisISDFromReader($"select * from {DBDingus.IsSchoolDagTableNames.HetIsEenSchoolDagTableNames} where {DBDingus.IsSchoolDagTableNames.Date} between DATEADD(yy, DATEDIFF(yy, 0, cast('{_request.year}/3/19' as date)), 0) and DATEADD(yy, DATEDIFF(yy, 0, cast('{_request.year}/3/19' as date)) + 1, -1) ");
+            }
+            return toReturn;
+        }
+
+        public static NetCom.ServerResponseChangeIsSchoolDagTable ChangeIsSchooldagTable(DBDingus.AcountTableEntry _MasterRightsEnty, NetCom.ServerRequestChangeIsSchoolDagTable _request)
+        {
+            NetCom.ServerResponseChangeIsSchoolDagTable toReturn = new NetCom.ServerResponseChangeIsSchoolDagTable();
+
+            if(_request.deleteList.Count > 0)
+            {
+                string addings = "";
+                foreach(var x in _request.deleteList)
+                {
+                    addings += x.ID + ", ";
+                }
+                addings = addings.Substring(0, addings.Length - 2);
+                FuncsVSQL.SQLNonQuery($"delete from {DBDingus.IsSchoolDagTableNames.HetIsEenSchoolDagTableNames} where {DBDingus.IsSchoolDagTableNames.ID} in ({addings})");                
+            }
+
+            if(_request.toAddToDB.Count > 0)
+            {
+                string addings = "";
+                for(int x = 0; x < _request.toAddToDB.Count; x++)
+                {
+                    addings += $"(cast('{_request.toAddToDB[x].Date.ToString("yyyy\\/ MM\\/ dd")}' as date)), ";
+                }
+                addings += $"(cast('{_request.toAddToDB[_request.toAddToDB.Count].Date.ToString("yyyy\\/ MM\\/ dd")}' as date))";
+                FuncsVSQL.SQLNonQuery($"insert into {DBDingus.IsSchoolDagTableNames.HetIsEenSchoolDagTableNames} ({DBDingus.IsSchoolDagTableNames.Date}) values {addings}");
+            }
+
+            return toReturn;
+        }
+
     }
 }

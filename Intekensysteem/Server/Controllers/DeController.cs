@@ -34,7 +34,7 @@ namespace Server.Controllers
             {
                 string toAdd = "";
                 toAdd = x.UsE.VoorNaam + "  " + x.UsE.AchterNaam;
-                if (x.hasTodayRegEntry)
+                if (x.HasTodayRegEntry)
                 {
                     if (x.RegE.HeeftIngetekend)
                     {
