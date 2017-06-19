@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ErFunc;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -16,5 +17,11 @@ namespace AdminGUI
         {
             InitializeComponent();
         }
+
+        List<DBDingus.IsSchoolDagTableEntry> errr = new List<DBDingus.IsSchoolDagTableEntry>();
+
+
+
+
     }
 }

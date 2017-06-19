@@ -28,18 +28,10 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.monthCalendar1 = new System.Windows.Forms.MonthCalendar();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.button1 = new System.Windows.Forms.Button();
+            this.monthCalendar1 = new System.Windows.Forms.MonthCalendar();
             this.SuspendLayout();
-            // 
-            // monthCalendar1
-            // 
-            this.monthCalendar1.CalendarDimensions = new System.Drawing.Size(3, 4);
-            this.monthCalendar1.Location = new System.Drawing.Point(6, 4);
-            this.monthCalendar1.Name = "monthCalendar1";
-            this.monthCalendar1.TabIndex = 11;
-            this.monthCalendar1.TodayDate = new System.DateTime(3000, 6, 2, 0, 0, 0, 0);
             // 
             // textBox1
             // 
@@ -58,14 +50,21 @@
             this.button1.Text = "Reaload With Year^^";
             this.button1.UseVisualStyleBackColor = true;
             // 
+            // monthCalendar1
+            // 
+            this.monthCalendar1.CalendarDimensions = new System.Drawing.Size(3, 4);
+            this.monthCalendar1.Location = new System.Drawing.Point(18, 18);
+            this.monthCalendar1.Name = "monthCalendar1";
+            this.monthCalendar1.TabIndex = 14;
+            // 
             // FormSetSchoolDagen
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(862, 647);
+            this.Controls.Add(this.monthCalendar1);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.textBox1);
-            this.Controls.Add(this.monthCalendar1);
             this.Name = "FormSetSchoolDagen";
             this.Text = "FormSetSchoolDagen";
             this.ResumeLayout(false);
@@ -74,9 +73,8 @@
         }
 
         #endregion
-
-        private System.Windows.Forms.MonthCalendar monthCalendar1;
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.MonthCalendar monthCalendar1;
     }
 }

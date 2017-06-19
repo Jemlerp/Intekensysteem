@@ -123,6 +123,13 @@ namespace Server.Controllers
                     case NetCom.WhatIsThisEnum.ChangeAcountTable:
                         toReturn.Response = FuncsVController.ChangeAcountTable(usingUser, Deserialise<NetCom.ServerRequestChangeAcountTable>(param));
                         break;
+                    case NetCom.WhatIsThisEnum.GetIsSchoolDagTable:
+                        toReturn.Response = FuncsVController.GetIsSchooldagTable(usingUser, Deserialise<NetCom.ServerRequestGetIsSchoolDagTable>(param));
+                        break;
+                    case NetCom.WhatIsThisEnum.ChangeIsSchoolDagTable:
+                        toReturn.Response = FuncsVController.ChangeIsSchooldagTable(usingUser, Deserialise<NetCom.ServerRequestChangeIsSchoolDagTable>(param));
+                        break;
+
                     default: throw new Exception("bla bla bla lala la lal aaaaa noob");
                 }
                 HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
