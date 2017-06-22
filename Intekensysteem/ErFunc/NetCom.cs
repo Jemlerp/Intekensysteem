@@ -262,7 +262,7 @@ namespace ErFunc
         {
             public WhatIsThisEnum WatIsDit { get { return WhatIsThisEnum.ChangeIsSchoolDagTable; } }
             //List<DateTime> toRemoveFromDB { get; set; } = new List<DateTime>(); // als er nog meer data makelijk bij gezet wilt worden
-            public List<DBDingus.IsSchoolDagTableEntry> deleteList = new List<DBDingus.IsSchoolDagTableEntry>(); // client can prosses by using the date or id
+            public List<DBDingus.IsSchoolDagTableEntry> deleteList = new List<DBDingus.IsSchoolDagTableEntry>(); // only id is used to delete
             public List<DateTime> toAddToDB { get; set; } = new List<DateTime>();
         }
 
